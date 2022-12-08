@@ -1,6 +1,5 @@
 package io.bf2.kafka.authorizer;
 
-import com.google.common.collect.Lists;
 import org.apache.log4j.Appender;
 import org.apache.log4j.Layout;
 import org.apache.log4j.Logger;
@@ -28,12 +27,11 @@ import java.util.List;
 public class VerifiableAppenderExtension implements BeforeEachCallback, AfterEachCallback, ParameterResolver {
     public static final String LOG_EVENTS_STORE_KEY = "logEvents";
     public static final String LOGGER_NAME_KEY = "LoggerName";
-    public final String appenderName;
+    private String appenderName;
     private final ExtensionContext.Namespace namespace;
 
     public VerifiableAppenderExtension() {
         namespace = ExtensionContext.Namespace.create(VerifiableAppenderExtension.class);
-        appenderName = "VerifiableAppender-" + Instant.now();
     }
 
     @Override
@@ -51,7 +49,8 @@ public class VerifiableAppenderExtension implements BeforeEachCallback, AfterEac
 
     @Override
     public void beforeEach(ExtensionContext extensionContext) {
-        final ArrayList<LoggingEvent> logEvents = Lists.newArrayList();
+        final List<LoggingEvent> logEvents = new ArrayList<>();
+        appenderName = "VerifiableAppender-" + extensionContext.getDisplayName() + "-" + Instant.now();
         Appender appender = new CollectingAppender(logEvents, appenderName);
         final String loggerName = getLoggerName(extensionContext);
         if (StringUtils.isNotBlank(loggerName)) {
@@ -95,10 +94,10 @@ public class VerifiableAppenderExtension implements BeforeEachCallback, AfterEac
     }
 
     private static class CollectingAppender implements Appender {
-        private final ArrayList<LoggingEvent> logEvents;
+        private final List<LoggingEvent> logEvents;
         private String appenderName;
 
-        public CollectingAppender(ArrayList<LoggingEvent> logEvents, String appenderName) {
+        public CollectingAppender(List<LoggingEvent> logEvents, String appenderName) {
             this.logEvents = logEvents;
             this.appenderName = appenderName;
         }

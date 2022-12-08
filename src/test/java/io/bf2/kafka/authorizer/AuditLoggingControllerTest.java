@@ -95,14 +95,14 @@ class AuditLoggingControllerTest {
         Action infoAction = new Action(AclOperation.READ,
                 new ResourcePattern(ResourceType.TOPIC, "baz", PatternType.LITERAL), 0, true, true);
 
-        final int minLoggedEventCount = loggingEvents.size() + 1;
+        final int loggedEventCount = loggingEvents.size() + 1;
         auditLoggingController.logAuditMessage(fetchRequestContext, infoAction, true);
 
         //When
         auditLoggingController.logAuditMessage(fetchRequestContext, infoAction, true);
 
         //Then
-        assertMinEventCount(minLoggedEventCount, loggingEvents.size());
+        assertEventCount(loggedEventCount, loggingEvents.size());
     }
 
     @Test
@@ -114,7 +114,7 @@ class AuditLoggingControllerTest {
         final ApiKeys[] apiKeys = ApiKeys.values();
         // By default, only produce and fetch operations are windowed
         final int suppressedEventCount = 2;
-        final int minLoggedEventCount = loggingEvents.size() + (apiKeys.length * 2) - suppressedEventCount;
+        final int loggedEventCount = loggingEvents.size() + (apiKeys.length * 2) - suppressedEventCount;
 
         //When
         for (ApiKeys value : apiKeys) {
@@ -123,7 +123,7 @@ class AuditLoggingControllerTest {
         }
 
         //Then
-        assertMinEventCount(minLoggedEventCount, loggingEvents.size());
+        assertEventCount(loggedEventCount, loggingEvents.size());
     }
 
     @Test
@@ -134,17 +134,17 @@ class AuditLoggingControllerTest {
         Action infoAction = new Action(AclOperation.READ,
                 new ResourcePattern(ResourceType.TOPIC, "baz", PatternType.LITERAL), 0, true, true);
 
-        final int minLoggedEventCount = loggingEvents.size() + 1;
+        final int loggedEventCount = loggingEvents.size() + 1;
         auditLoggingController.logAuditMessage(fetchRequestContext, infoAction, true);
         auditLoggingController.logAuditMessage(fetchRequestContext, infoAction, true);
         // We expect one log entry as part of the initial logging event
-        assertEquals(minLoggedEventCount, loggingEvents.size(), "Something extra  logged before window expiry");
+        assertEquals(loggedEventCount, loggingEvents.size(), "Something extra  logged before window expiry");
 
         //When
         auditLoggingController.evictWindowedEvents(); //Rather than wait for window expiry purge the cache manually
 
         //Then
-        assertTrue(minLoggedEventCount < loggingEvents.size(), "Nothing logged after window expiry");
+        assertTrue(loggedEventCount < loggingEvents.size(), "Nothing logged after window expiry");
         assertMessageLogged(loggingEvents, "Principal = User:test is Allowed Operation = Read from host = 127.0.0.1 via listener security-9095 on resource = Topic:LITERAL:baz for request = FETCH with resourceRefCount = 0", Level.INFO);
         assertMessageLogged(loggingEvents, "Principal = User:test is Allowed Operation = Read from host = 127.0.0.1 via listener security-9095 on resource = Topic:LITERAL:baz for request = FETCH with resourceRefCount = 0 suppressed log event original at .*", Level.INFO);
     }
@@ -157,18 +157,18 @@ class AuditLoggingControllerTest {
         Action infoAction = new Action(AclOperation.READ,
                 new ResourcePattern(ResourceType.TOPIC, "baz", PatternType.LITERAL), 0, true, true);
 
-        final int minLoggedEventCount = loggingEvents.size() + 1;
+        final int loggedEventCount = loggingEvents.size() + 1;
         auditLoggingController.logAuditMessage(fetchRequestContext, infoAction, true);
         auditLoggingController.logAuditMessage(fetchRequestContext, infoAction, true);
         auditLoggingController.logAuditMessage(fetchRequestContext, infoAction, true);
         // We expect one log entry as part of the initial logging event
-        assertEquals(minLoggedEventCount, loggingEvents.size(), "Something extra  logged before window expiry");
+        assertEquals(loggedEventCount, loggingEvents.size(), "Something extra  logged before window expiry");
 
         //When
         auditLoggingController.evictWindowedEvents(); //Rather than wait for window expiry purge the cache manually
 
         //Then
-        assertTrue(minLoggedEventCount < loggingEvents.size(), "Nothing logged after window expiry");
+        assertTrue(loggedEventCount < loggingEvents.size(), "Nothing logged after window expiry");
         assertMessageLogged(loggingEvents, "Principal = User:test is Allowed Operation = Read from host = 127.0.0.1 via listener security-9095 on resource = Topic:LITERAL:baz for request = FETCH with resourceRefCount = 0", Level.INFO);
         assertMessageLogged(loggingEvents, "Principal = User:test is Allowed Operation = Read from host = 127.0.0.1 via listener security-9095 on resource = Topic:LITERAL:baz for request = FETCH with resourceRefCount = 0 with 2 identical entries suppressed between .* and .*", Level.INFO);
     }
@@ -181,16 +181,16 @@ class AuditLoggingControllerTest {
         Action infoAction = new Action(AclOperation.READ,
                 new ResourcePattern(ResourceType.TOPIC, "baz", PatternType.LITERAL), 0, true, true);
 
-        final int minLoggedEventCount = loggingEvents.size() + 1;
+        final int loggedEventCount = loggingEvents.size() + 1;
         auditLoggingController.logAuditMessage(fetchRequestContext, infoAction, true);
         // We expect one log entry as part of the initial logging event
-        assertEquals(minLoggedEventCount, loggingEvents.size(), "Something extra  logged before window expiry");
+        assertEquals(loggedEventCount, loggingEvents.size(), "Something extra  logged before window expiry");
 
         //When
         auditLoggingController.evictWindowedEvents(); //Rather than wait for window expiry purge the cache manually
 
         //Then
-        assertEquals(minLoggedEventCount, loggingEvents.size(), "Something extra logged after window expiry");
+        assertEquals(loggedEventCount, loggingEvents.size(), "Something extra logged after window expiry");
         assertMessageLogged(loggingEvents, "Principal = User:test is Allowed Operation = Read from host = 127.0.0.1 via listener security-9095 on resource = Topic:LITERAL:baz for request = FETCH with resourceRefCount = 0", Level.INFO);
     }
 
@@ -200,17 +200,17 @@ class AuditLoggingControllerTest {
         Action infoAction = new Action(AclOperation.READ,
                 new ResourcePattern(ResourceType.TOPIC, "baz", PatternType.LITERAL), 0, true, true);
 
-        final int minLoggedEventCount = loggingEvents.size() + 1;
+        final int loggedEventCount = loggingEvents.size() + 1;
         for (int i = 0; i < 10; i++) {
             auditLoggingController.logAuditMessage(fetchRequestContext, infoAction, true);
         }
-        assertEquals(minLoggedEventCount, loggingEvents.size(), "Something logged before window expiry");
+        assertEquals(loggedEventCount, loggingEvents.size(), "Something logged before window expiry");
 
         //When
         auditLoggingController.evictWindowedEvents(); //Rather than wait for window expiry purge the cache manually
 
         //Then
-        assertTrue(minLoggedEventCount < loggingEvents.size(), "Nothing logged after window expiry");
+        assertTrue(loggedEventCount < loggingEvents.size(), "Nothing logged after window expiry");
         assertMessageLogged(loggingEvents, "Principal = User:test is Allowed Operation = Read from host = 127.0.0.1 via listener security-9095 on resource = Topic:LITERAL:baz for request = FETCH with resourceRefCount = 0 with 9 identical entries suppressed between .* and .*", Level.INFO);
     }
 
@@ -220,14 +220,14 @@ class AuditLoggingControllerTest {
         Action infoAction = new Action(AclOperation.READ,
                 new ResourcePattern(ResourceType.TOPIC, "baz", PatternType.LITERAL), 0, true, true);
 
-        final int minLoggedEventCount = loggingEvents.size() + 2;
+        final int loggedEventCount = loggingEvents.size() + 2;
         auditLoggingController.logAuditMessage(fetchRequestContext, infoAction, true);
 
         //When
         auditLoggingController.logAuditMessage(fetchRequestContext, infoAction, false);
 
         //Then
-        assertEquals(minLoggedEventCount, loggingEvents.size(), "Something logged after window expiry");
+        assertEquals(loggedEventCount, loggingEvents.size(), "Something logged after window expiry");
         assertMessageLogged(loggingEvents, "Principal = User:test is Allowed Operation = Read from host = 127.0.0.1 via listener security-9095 on resource = Topic:LITERAL:baz for request = FETCH with resourceRefCount = 0", Level.INFO);
         assertMessageLogged(loggingEvents, "Principal = User:test is Denied Operation = Read from host = 127.0.0.1 via listener security-9095 on resource = Topic:LITERAL:baz for request = FETCH with resourceRefCount = 0", Level.INFO);
     }
@@ -240,14 +240,14 @@ class AuditLoggingControllerTest {
         final AuthorizableRequestContext rc = stubRequestContext(ApiKeys.FETCH);
         when(rc.principal()).thenReturn(new KafkaPrincipal(KafkaPrincipal.USER_TYPE, "user2"));
 
-        final int minLoggedEventCount = loggingEvents.size() + 2;
+        final int loggedEventCount = loggingEvents.size() + 2;
         auditLoggingController.logAuditMessage(fetchRequestContext, infoAction, true);
 
         //When
         auditLoggingController.logAuditMessage(rc, infoAction, true);
 
         //Then
-        assertEquals(minLoggedEventCount, loggingEvents.size(), "Something logged after window expiry");
+        assertEquals(loggedEventCount, loggingEvents.size(), "Something logged after window expiry");
         assertMessageLogged(loggingEvents, "Principal = User:test is Allowed Operation = Read from host = 127.0.0.1 via listener security-9095 on resource = Topic:LITERAL:baz for request = FETCH with resourceRefCount = 0", Level.INFO);
         assertMessageLogged(loggingEvents, "Principal = User:user2 is Allowed Operation = Read from host = 127.0.0.1 via listener security-9095 on resource = Topic:LITERAL:baz for request = FETCH with resourceRefCount = 0", Level.INFO);
     }
@@ -258,14 +258,14 @@ class AuditLoggingControllerTest {
         final AuthorizableRequestContext rc = stubRequestContext(ApiKeys.FETCH);
         when(rc.listenerName()).thenReturn("SRE-9096://0.0.0.0:9096");
 
-        final int minLoggedEventCount = loggingEvents.size() + 2;
+        final int loggedEventCount = loggingEvents.size() + 2;
         auditLoggingController.logAuditMessage(fetchRequestContext, infoAction, true);
 
         //When
         auditLoggingController.logAuditMessage(rc, infoAction, true);
 
         //Then
-        assertEquals(minLoggedEventCount, loggingEvents.size(), "Something logged after window expiry");
+        assertEquals(loggedEventCount, loggingEvents.size(), "Something logged after window expiry");
         assertMessageLogged(loggingEvents, "Principal = User:test is Allowed Operation = Read from host = 127.0.0.1 via listener security-9095 on resource = Topic:LITERAL:baz for request = FETCH with resourceRefCount = 0", Level.INFO);
         assertMessageLogged(loggingEvents, "Principal = User:test is Allowed Operation = Read from host = 127.0.0.1 via listener SRE-9096://0.0.0.0:9096 on resource = Topic:LITERAL:baz for request = FETCH with resourceRefCount = 0", Level.INFO);
     }
@@ -279,14 +279,14 @@ class AuditLoggingControllerTest {
                 new ResourcePattern(ResourceType.TOPIC, "__strimizi_canary", PatternType.LITERAL), 0, true, true);
 
 
-        final int minLoggedEventCount = loggingEvents.size() + 2;
+        final int loggedEventCount = loggingEvents.size() + 2;
         auditLoggingController.logAuditMessage(fetchRequestContext, bazAction, true);
 
         //When
         auditLoggingController.logAuditMessage(fetchRequestContext, barAction, true);
 
         //Then
-        assertEquals(minLoggedEventCount, loggingEvents.size(), "Something logged after window expiry");
+        assertEquals(loggedEventCount, loggingEvents.size(), "Something logged after window expiry");
         assertMessageLogged(loggingEvents, "Principal = User:test is Allowed Operation = Read from host = 127.0.0.1 via listener security-9095 on resource = Topic:LITERAL:baz for request = FETCH with resourceRefCount = 0", Level.INFO);
         assertMessageLogged(loggingEvents, "Principal = User:test is Allowed Operation = Read from host = 127.0.0.1 via listener security-9095 on resource = Topic:LITERAL:__strimizi_canary for request = FETCH with resourceRefCount = 0", Level.INFO);
     }
@@ -294,18 +294,17 @@ class AuditLoggingControllerTest {
     @Test
     void shouldNotSuppressLogEventsFromDifferentOperations(@LoggedEvents List<LoggingEvent> loggingEvents) {
         //Given
-        final int minLoggedEventCount = loggingEvents.size() + 2;
+        final int loggedEventCount = loggingEvents.size() + 2;
         auditLoggingController.logAuditMessage(fetchRequestContext, infoAction, true);
 
         //When
         auditLoggingController.logAuditMessage(stubRequestContext(ApiKeys.PRODUCE), infoAction, true);
 
         //Then
-        assertEquals(minLoggedEventCount, loggingEvents.size(), "Something logged after window expiry");
+        assertEquals(loggedEventCount, loggingEvents.size(), "Something logged after window expiry");
         assertMessageLogged(loggingEvents, "Principal = User:test is Allowed Operation = Read from host = 127.0.0.1 via listener security-9095 on resource = Topic:LITERAL:baz for request = FETCH with resourceRefCount = 0", Level.INFO);
         assertMessageLogged(loggingEvents, "Principal = User:test is Allowed Operation = Read from host = 127.0.0.1 via listener security-9095 on resource = Topic:LITERAL:baz for request = PRODUCE with resourceRefCount = 0", Level.INFO);
     }
-
 
     @Test
     void shouldLogSuppressedEventsOnClose(@LoggedEvents List<LoggingEvent> loggingEvents) {
@@ -313,17 +312,17 @@ class AuditLoggingControllerTest {
         Action infoAction = new Action(AclOperation.READ,
                 new ResourcePattern(ResourceType.TOPIC, "baz", PatternType.LITERAL), 0, true, true);
 
-        final int minLoggedEventCount = loggingEvents.size() + 1;
+        final int loggedEventCount = loggingEvents.size() + 1;
         auditLoggingController.logAuditMessage(fetchRequestContext, infoAction, true);
         auditLoggingController.logAuditMessage(fetchRequestContext, infoAction, true);
         // We expect one log entry as part of the initial logging event
-        assertEquals(minLoggedEventCount, loggingEvents.size(), "Something extra logged before window expiry");
+        assertEquals(loggedEventCount, loggingEvents.size(), "Something extra logged before window expiry");
 
         //When
         auditLoggingController.close();
 
         //Then
-        assertTrue(minLoggedEventCount < loggingEvents.size(), "Nothing logged after window expiry");
+        assertTrue(loggedEventCount < loggingEvents.size(), "Nothing logged after window expiry");
         assertMessageLogged(loggingEvents, "Principal = User:test is Allowed Operation = Read from host = 127.0.0.1 via listener security-9095 on resource = Topic:LITERAL:baz for request = FETCH with resourceRefCount = 0", Level.INFO);
         assertMessageLogged(loggingEvents, "Principal = User:test is Allowed Operation = Read from host = 127.0.0.1 via listener security-9095 on resource = Topic:LITERAL:baz for request = FETCH with resourceRefCount = 0 suppressed log event original at .*", Level.INFO);
     }
@@ -351,7 +350,7 @@ class AuditLoggingControllerTest {
 
         //When
         final int eventCount = 10;
-        final int minLoggedEventCount = loggingEvents.size() + eventCount;
+        final int loggedEventCount = loggingEvents.size() + eventCount;
 
         for (int i = 0; i < eventCount; i++) {
             auditLoggingController.logAuditMessage(fetchRequestContext, infoAction, true);
@@ -360,7 +359,7 @@ class AuditLoggingControllerTest {
         auditLoggingController.evictWindowedEvents();
 
         //Then
-        assertMinEventCount(minLoggedEventCount, loggingEvents.size());
+        assertEventCount(loggedEventCount, loggingEvents.size());
     }
 
     @SuppressWarnings("SameParameterValue")
@@ -402,8 +401,8 @@ class AuditLoggingControllerTest {
         return rc;
     }
 
-    private void assertMinEventCount(int expectedMinEventCount, int actualEventCount) {
-        assertTrue(actualEventCount >= expectedMinEventCount, String.format("Too few events logged, expected at least %d, saw %d", expectedMinEventCount, actualEventCount));
+    private void assertEventCount(int expectedEventCount, int actualEventCount) {
+        assertEquals(expectedEventCount, actualEventCount, String.format("Too few events logged, expected %d, saw %d", expectedEventCount, actualEventCount));
     }
 
 }
